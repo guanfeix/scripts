@@ -97,16 +97,19 @@ for db in ${dbs[*]}; do
     fi 
   
     if [[ $debug -eq 1 ]]; then echo "Getting list of views of $db"; fi
-    declare -a views=( $(curl -q -s ${cdbproto}://${cdbhost}:${cdbport}/${db}/_design_docs ${cdbcreds}|jshon -e rows -a -e id -u|awk -F '/' '{print $2}') )
+    declare -a views=( $(curl -q -s ${cdbproto}://${cdbhost}:${cdbport}/${db}/_design_docs ${cdbcreds}|jshon -e views -k) )
 
     if [[ $debug -eq 1 ]]; then echo "Found ${#views[*]} view(s) in $db: ${views[*]}"; fi
-  
+    echo "Running compact on whole view"
+    echo curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_compact/${db}/ ${cdbcreds}
+    echo "Running _view_cleanup on change db view"
+    echo curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_view_cleanup/ ${cdbcreds}
     for view in ${views[*]}; do
       if [[ $debug -eq 1 ]]; then 
         echo "Running compact on view $view"
-        echo curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_compact/${view} ${cdbcreds}
+        echo curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_compact/${db}/${view} ${cdbcreds}
       fi
-      curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_compact/${view} ${cdbcreds}
+      curl -q -s -H "Content-Type: application/json" -X POST ${cdbproto}://${cdbhost}:${cdbport}/${db}/_compact/${db}/${view} ${cdbcreds}
     done
   fi
 
