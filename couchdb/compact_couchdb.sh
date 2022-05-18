@@ -97,7 +97,7 @@ for db in ${dbs[*]}; do
     fi 
   
     if [[ $debug -eq 1 ]]; then echo "Getting list of views of $db"; fi
-    declare -a views=( $(curl -q -s ${cdbproto}://${cdbhost}:${cdbport}/${db}/_design_docs ${cdbcreds}|jshon -e views -k) )
+    declare -a views=( $(curl -q -s ${cdbproto}://${cdbhost}:${cdbport}/${db}/_design ${cdbcreds}|jshon -e views -k) )
 
     if [[ $debug -eq 1 ]]; then echo "Found ${#views[*]} view(s) in $db: ${views[*]}"; fi
     echo "Running compact on whole view"
